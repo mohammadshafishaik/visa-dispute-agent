@@ -1,0 +1,34 @@
+services:
+  # Web Service
+  - type: web
+    name: visa-dispute-agent
+    env: docker
+    plan: free
+    repo: https://github.com/mohammadshafishaik/visa-dispute-agent
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerCommand: uvicorn app.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: SMTP_EMAIL
+        value: sk.mohammadshafi3044@gmail.com
+      - key: SMTP_PASSWORD
+        value: tmicsjfjtkenuszq
+      - key: SMTP_SERVER
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: LLM_MODEL
+        value: llama3.2
+      - key: LLM_PROVIDER
+        value: ollama
+      - key: LLM_API_KEY
+        value: not-needed
+      - key: LOG_LEVEL
+        value: INFO
+      - key: CONFIDENCE_THRESHOLD
+        value: "0.85"
+      - key: SIMILARITY_THRESHOLD
+        value: "0.7"
+      - key: MAX_RETRY_ATTEMPTS
+        value: "3"
