@@ -226,4 +226,4 @@ For issues or questions:
 
 ---
 
-**Built with ❤️ using AI and modern Python**
+**Built with ❤️  and modern Python**
