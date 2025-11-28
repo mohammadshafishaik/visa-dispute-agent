@@ -1,0 +1,72 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: visa_user
+      POSTGRES_PASSWORD: visa_password
+      POSTGRES_DB: visa_disputes
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U visa_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chromadb:
+    image: chromadb/chroma:0.4.24
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+
+  app:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://visa_user:visa_password@postgres:5432/visa_disputes
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-test-key-for-development}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-test-key-for-development}
+      - LLM_API_KEY=${LLM_API_KEY:-AIzaSyBnoJfoRzgjIE6grtmqmQ5nfq-E96MMhAc}
+      - LLM_MODEL=${LLM_MODEL:-llama3.2}
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      - SMTP_EMAIL=${SMTP_EMAIL:-sk.mohammadshafi3044@gmail.com}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-tigs yqfv uwsb mruy}
+      - SMTP_SERVER=${SMTP_SERVER:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - LOG_LEVEL=INFO
+      - MAX_RETRY_ATTEMPTS=3
+      - CONFIDENCE_THRESHOLD=0.85
+      - SIMILARITY_THRESHOLD=0.7
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    volumes:
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+      - ./scripts:/app/scripts
+    command: >
+      sh -c "
+        python scripts/wait_for_services.py &&
+        alembic upgrade head &&
+        python scripts/seed_chromadb.py &&
+        uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+volumes:
+  postgres_data:
+  chroma_data:
