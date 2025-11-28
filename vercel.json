@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app/api/main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app/api/main.py"
+    }
+  ],
+  "env": {
+    "SMTP_EMAIL": "@smtp_email",
+    "SMTP_PASSWORD": "@smtp_password",
+    "SMTP_SERVER": "smtp.gmail.com",
+    "SMTP_PORT": "587",
+    "LLM_MODEL": "llama3.2",
+    "LLM_PROVIDER": "ollama",
+    "LOG_LEVEL": "INFO",
+    "CONFIDENCE_THRESHOLD": "0.85",
+    "SIMILARITY_THRESHOLD": "0.7",
+    "MAX_RETRY_ATTEMPTS": "3"
+  }
+}
